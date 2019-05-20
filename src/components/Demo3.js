@@ -1,6 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {InfiniteLoader, List} from 'react-virtualized';
+import {InfiniteLoader, List, AutoSizer} from 'react-virtualized';
 import 'react-virtualized/styles.css'; // only needs to be imported once
 
 const STATUS_LOADING = 1;
@@ -31,12 +30,12 @@ class App extends React.Component {
 
     if (loadedRowsMap[index] === STATUS_LOADED && row) {
       content = (
-        <div style={{border: '1px solid #ddd', padding: 5, background: '#ddd'}}>
+        <div style={{border: '1px solid #fff', padding: 5, background: '#ddd'}}>
           {index}: {row.id}, {row.employee_name}
         </div>
       );
     } else {
-      content = <div  style={{color: 'red'}}>{index}: loading...</div>;
+      content = <div style={{color: 'red'}}>{index}: loading...</div>;
     }
 
     return (
@@ -88,25 +87,44 @@ class App extends React.Component {
   };
 
   render() {
-    const {totalCount} = this.state;
+    const {totalCount, loadingRowCount, loadedRowCount} = this.state;
+
+    // 使用 AutoSizer 可以自动给 AutoSizer 设置高度和宽度
+    // 详情: https://github.com/bvaughn/react-virtualized/blob/master/docs/usingAutoSizer.md
     return (
-      <InfiniteLoader
-        isRowLoaded={this.isRowLoaded}
-        loadMoreRows={this.loadMoreRows}
-        rowCount={totalCount}
-      >
-        {({onRowsRendered, registerChild}) => (
-          <List
-            height={200}
-            onRowsRendered={onRowsRendered}
-            ref={registerChild}
+      <div>
+        <div>
+          <p>
+            加载中: {loadingRowCount}, 加载完成: {loadedRowCount}{' '}
+          </p>
+        </div>
+
+        <div
+          style={{position: 'fixed', top: 150, left: 0, right: 0, bottom: 0}}
+        >
+          <InfiniteLoader
+            isRowLoaded={this.isRowLoaded}
+            loadMoreRows={this.loadMoreRows}
             rowCount={totalCount}
-            rowHeight={50}
-            rowRenderer={this.rowRenderer}
-            width={300}
-          />
-        )}
-      </InfiniteLoader>
+          >
+            {({onRowsRendered, registerChild}) => (
+              <AutoSizer>
+                {({height, width}) => (
+                  <List
+                    height={height}
+                    onRowsRendered={onRowsRendered}
+                    ref={registerChild}
+                    rowCount={totalCount}
+                    rowHeight={50}
+                    rowRenderer={this.rowRenderer}
+                    width={width}
+                  />
+                )}
+              </AutoSizer>
+            )}
+          </InfiniteLoader>
+        </div>
+      </div>
     );
   }
 }

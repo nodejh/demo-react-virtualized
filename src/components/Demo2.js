@@ -1,7 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {InfiniteLoader, List, AutoSizer} from 'react-virtualized';
-import 'react-virtualized/styles.css'; // only needs to be imported once
+import {InfiniteLoader, List} from 'react-virtualized';
 
 const STATUS_LOADING = 1;
 const STATUS_LOADED = 2;
@@ -12,9 +10,9 @@ class App extends React.Component {
     this.state = {
       totalCount: 1000,
       list: [],
-      loadedRowCount: 0,
-      loadedRowsMap: {},
-      loadingRowCount: 0,
+      loadedRowCount: 0, // 当前已经加载完毕的列表数量
+      loadedRowsMap: {}, // 列表索引 -> 是否正在加载 的映射。如 { 1: 2 }，表示列表第一项已经加载完毕
+      loadingRowCount: 0, // 当前正在加载的列表数量
     };
   }
 
@@ -31,7 +29,7 @@ class App extends React.Component {
 
     if (loadedRowsMap[index] === STATUS_LOADED && row) {
       content = (
-        <div style={{border: '1px solid #fff', padding: 5, background: '#ddd'}}>
+        <div style={{border: '1px solid #ddd', padding: 5, background: '#ddd'}}>
           {index}: {row.id}, {row.employee_name}
         </div>
       );
@@ -54,6 +52,7 @@ class App extends React.Component {
       loadedRowsMap[i] = STATUS_LOADING;
     }
 
+    // 更新每一项的加载状态，已经加载中的数量
     this.setState({
       loadedRowsMap,
       loadingRowCount: loadingRowCount + increment,
@@ -78,6 +77,7 @@ class App extends React.Component {
           id: Math.round(Math.random() * 2000) + o.id,
         }));
 
+        // 更新每一项的加载状态，已经加载中、加载完成的数量，以及列表的数据
         this.setState({
           list: this.state.list.concat(data),
           loadingRowCount: loadingRowCount - increment,
@@ -88,29 +88,33 @@ class App extends React.Component {
   };
 
   render() {
-    const {totalCount} = this.state;
+    const {totalCount, loadingRowCount, loadedRowCount} = this.state;
     return (
-      <InfiniteLoader
-        isRowLoaded={this.isRowLoaded}
-        loadMoreRows={this.loadMoreRows}
-        rowCount={totalCount}
-      >
-        {({onRowsRendered, registerChild}) => (
-          <AutoSizer>
-            {({height, width}) => (
-              <List
-                height={height}
-                onRowsRendered={onRowsRendered}
-                ref={registerChild}
-                rowCount={totalCount}
-                rowHeight={50}
-                rowRenderer={this.rowRenderer}
-                width={width}
-              />
-            )}
-          </AutoSizer>
-        )}
-      </InfiniteLoader>
+      <div>
+        <div>
+          <p>
+            加载中: {loadingRowCount}, 加载完成: {loadedRowCount}{' '}
+          </p>
+        </div>
+        <InfiniteLoader
+          isRowLoaded={this.isRowLoaded}
+          loadMoreRows={this.loadMoreRows}
+          rowCount={totalCount}
+        >
+          {({onRowsRendered, registerChild}) => (
+            <List
+              height={200}
+              onRowsRendered={onRowsRendered}
+              ref={registerChild}
+              rowCount={totalCount}
+              rowHeight={50}
+              rowRenderer={this.rowRenderer}
+              width={300}
+              style={{ border: '1px solid blue' }}
+            />
+          )}
+        </InfiniteLoader>
+      </div>
     );
   }
 }
