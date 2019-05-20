@@ -94,7 +94,6 @@ class App extends React.Component {
     // URL 参数：
     // - startIndex 为了展示当前的 startIndex
     // - stopIndex 为了展示当前的 stopIndex
-    // - stopIndex 为了展示当前的 stopIndex
     // - pageNumber
     // - pageSize
 
